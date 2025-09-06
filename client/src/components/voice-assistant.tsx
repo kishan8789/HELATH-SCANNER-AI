@@ -90,45 +90,46 @@ export default function VoiceAssistant() {
   return (
     <>
       {/* Floating Voice Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50 float">
         <Button
           size="icon"
-          className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
-            isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+          className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 breathe glow ${
+            isListening ? 'bg-red-500 hover:bg-red-600 pulse-animation' : 'bg-primary hover:bg-primary/90'
           }`}
           onClick={handleVoiceToggle}
           data-testid="button-voice-toggle"
         >
           {isListening ? (
-            <MicOff className="text-primary-foreground w-5 h-5" />
+            <MicOff className="text-primary-foreground w-5 h-5 voice-wave" />
           ) : (
-            <Mic className="text-primary-foreground w-5 h-5" />
+            <Mic className="text-primary-foreground w-5 h-5 heartbeat" />
           )}
         </Button>
         
         {/* Voice Panel */}
         {isVoicePanelOpen && (
-          <Card className="absolute bottom-16 right-0 w-80 shadow-xl border">
+          <Card className="absolute bottom-16 right-0 w-80 shadow-xl border scale-in bounce-in hover-lift">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-card-foreground" data-testid="voice-panel-title">Voice Assistant</h4>
+              <div className="flex items-center justify-between mb-3 slide-in-left">
+                <h4 className="font-medium text-card-foreground typewriter" data-testid="voice-panel-title">Voice Assistant</h4>
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsVoicePanelOpen(false)}
+                  className="hover-scale"
                   data-testid="button-close-voice-panel"
                 >
                   <MicOff className="h-4 w-4" />
                 </Button>
               </div>
               
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-6 breathe">
                 <div className="flex items-center space-x-2">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
                       className={`w-3 rounded-full transition-all duration-300 ${
-                        isListening ? 'bg-primary animate-pulse' : 'bg-muted'
+                        isListening ? 'bg-primary voice-wave glow' : 'bg-muted pulse-animation'
                       }`}
                       style={{
                         height: isListening ? `${Math.random() * 20 + 10}px` : '10px',
@@ -139,28 +140,28 @@ export default function VoiceAssistant() {
                 </div>
               </div>
               
-              <div className="text-center">
+              <div className="text-center fade-in">
                 {isListening ? (
                   <>
-                    <p className="text-sm text-muted-foreground mb-2" data-testid="voice-status-listening">
+                    <p className="text-sm text-muted-foreground mb-2 typewriter" data-testid="voice-status-listening">
                       {transcript || "Listening..."}
                     </p>
-                    <p className="text-xs text-muted-foreground">Say "nutrition scan" or "acne analysis"</p>
+                    <p className="text-xs text-muted-foreground slide-in-left stagger-1">Say "nutrition scan" or "acne analysis"</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-muted-foreground mb-2" data-testid="voice-status-ready">
+                    <p className="text-sm text-muted-foreground mb-2 bounce-in" data-testid="voice-status-ready">
                       {lastCommand || "Ready to listen"}
                     </p>
-                    <p className="text-xs text-muted-foreground">Click the microphone to start</p>
+                    <p className="text-xs text-muted-foreground slide-in-right stagger-1">Click the microphone to start</p>
                   </>
                 )}
               </div>
               
               {ttsMutation.isPending && (
-                <div className="mt-3 flex items-center justify-center space-x-2">
-                  <Volume2 className="h-4 w-4 text-primary animate-pulse" />
-                  <span className="text-sm text-muted-foreground" data-testid="tts-status">Speaking...</span>
+                <div className="mt-3 flex items-center justify-center space-x-2 scale-in">
+                  <Volume2 className="h-4 w-4 text-primary voice-wave glow" />
+                  <span className="text-sm text-muted-foreground shimmer" data-testid="tts-status">Speaking...</span>
                 </div>
               )}
             </CardContent>
