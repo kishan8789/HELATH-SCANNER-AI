@@ -41,18 +41,18 @@ export default function ScanHistory() {
 
   if (isLoading) {
     return (
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-8 fade-in">
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="hover-lift">
             <CardContent className="p-6">
               <div className="animate-pulse space-y-4">
-                <div className="h-6 bg-muted rounded w-1/3"></div>
+                <div className="h-6 bg-muted rounded w-1/3 shimmer"></div>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center p-4 bg-muted/50 rounded-lg">
-                    <div className="w-12 h-12 bg-muted rounded-lg mr-4"></div>
+                  <div key={i} className="flex items-center p-4 bg-muted/50 rounded-lg shimmer" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div className="w-12 h-12 bg-muted rounded-lg mr-4 pulse-animation"></div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
-                      <div className="h-3 bg-muted rounded w-2/3"></div>
+                      <div className="h-4 bg-muted rounded w-1/2 shimmer"></div>
+                      <div className="h-3 bg-muted rounded w-2/3 shimmer" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 ))}
@@ -61,15 +61,15 @@ export default function ScanHistory() {
           </Card>
         </div>
         <div>
-          <Card>
+          <Card className="hover-lift">
             <CardContent className="p-6">
               <div className="animate-pulse space-y-4">
-                <div className="h-6 bg-muted rounded w-1/2"></div>
+                <div className="h-6 bg-muted rounded w-1/2 shimmer"></div>
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="space-y-2">
-                      <div className="h-4 bg-muted rounded"></div>
-                      <div className="h-2 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded shimmer" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                      <div className="h-2 bg-muted rounded shimmer" style={{ animationDelay: `${i * 0.2}s` }}></div>
                     </div>
                   ))}
                 </div>
@@ -94,14 +94,14 @@ export default function ScanHistory() {
     acneScans.reduce((acc: number, scan: any) => acc + scan.confidence, 0) / acneScans.length : 0;
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
+    <div className="grid lg:grid-cols-3 gap-8 fade-in">
       {/* Recent Scans */}
-      <div className="lg:col-span-2">
-        <Card>
+      <div className="lg:col-span-2 slide-in-left">
+        <Card className="hover-lift">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-card-foreground" data-testid="recent-scans-title">Recent Scans</h3>
-              <Button variant="ghost" className="text-primary hover:text-primary/80" data-testid="button-view-history">
+            <div className="flex items-center justify-between mb-6 slide-in-left">
+              <h3 className="text-xl font-semibold text-card-foreground typewriter" data-testid="recent-scans-title">Recent Scans</h3>
+              <Button variant="ghost" className="text-primary hover:text-primary/80 hover-scale glow" data-testid="button-view-history">
                 View History
               </Button>
             </div>
@@ -115,24 +115,25 @@ export default function ScanHistory() {
                   </p>
                 </div>
               ) : (
-                scans.slice(0, 5).map((scan: any) => (
+                scans.slice(0, 5).map((scan: any, index: number) => (
                   <div 
                     key={scan.id} 
-                    className="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors"
+                    className="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors scale-in hover-lift"
+                    style={{ animationDelay: `${index * 0.1}s` }}
                     data-testid={`scan-item-${scan.id}`}
                   >
-                    <div className="w-12 h-12 bg-card rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-12 h-12 bg-card rounded-lg flex items-center justify-center mr-4 float hover-glow">
                       {getScanIcon(scan.type)}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-card-foreground" data-testid={`scan-title-${scan.id}`}>
+                      <h4 className="font-medium text-card-foreground bounce-in" data-testid={`scan-title-${scan.id}`}>
                         {getScanTypeLabel(scan.type)}
                       </h4>
-                      <p className="text-sm text-muted-foreground" data-testid={`scan-summary-${scan.id}`}>
+                      <p className="text-sm text-muted-foreground fade-in stagger-1" data-testid={`scan-summary-${scan.id}`}>
                         {scan.analysis?.summary || 'Health analysis completed'}
                       </p>
-                      <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                        <Calendar className="w-3 h-3 mr-1" />
+                      <div className="flex items-center mt-1 text-xs text-muted-foreground slide-in-left stagger-2">
+                        <Calendar className="w-3 h-3 mr-1 pulse-animation" />
                         <span data-testid={`scan-date-${scan.id}`}>
                           {format(new Date(scan.createdAt), 'PPp')}
                         </span>
@@ -140,12 +141,12 @@ export default function ScanHistory() {
                     </div>
                     <div className="text-right">
                       <span 
-                        className={`text-sm font-medium ${getStatusColor(scan.confidence)}`}
+                        className={`text-sm font-medium heartbeat ${getStatusColor(scan.confidence)}`}
                         data-testid={`scan-status-${scan.id}`}
                       >
                         {getStatusLabel(scan.confidence)}
                       </span>
-                      <p className="text-xs text-muted-foreground" data-testid={`scan-confidence-${scan.id}`}>
+                      <p className="text-xs text-muted-foreground slide-in-right stagger-1" data-testid={`scan-confidence-${scan.id}`}>
                         {scan.confidence}% confidence
                       </p>
                     </div>
@@ -158,54 +159,54 @@ export default function ScanHistory() {
       </div>
       
       {/* Health Progress */}
-      <div>
-        <Card>
+      <div className="slide-in-right stagger-2">
+        <Card className="hover-lift">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold text-card-foreground mb-6" data-testid="health-progress-title">
+            <h3 className="text-xl font-semibold text-card-foreground mb-6 typewriter" data-testid="health-progress-title">
               Health Progress
             </h3>
             
             <div className="space-y-6">
-              <div>
+              <div className="scale-in stagger-1">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-card-foreground">Overall Health</span>
-                  <span className="text-sm text-muted-foreground" data-testid="overall-health-score">
+                  <span className="text-sm font-medium text-card-foreground slide-in-left">Overall Health</span>
+                  <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="overall-health-score">
                     {Math.round(overallHealth)}%
                   </span>
                 </div>
-                <Progress value={overallHealth} className="h-3" />
+                <Progress value={overallHealth} className="h-3 glow" />
               </div>
               
               {nutritionHealth > 0 && (
-                <div>
+                <div className="scale-in stagger-2">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-card-foreground">Nutrition Status</span>
-                    <span className="text-sm text-muted-foreground" data-testid="nutrition-health-score">
+                    <span className="text-sm font-medium text-card-foreground slide-in-left">Nutrition Status</span>
+                    <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="nutrition-health-score">
                       {Math.round(nutritionHealth)}%
                     </span>
                   </div>
-                  <Progress value={nutritionHealth} className="h-3" />
+                  <Progress value={nutritionHealth} className="h-3 glow" />
                 </div>
               )}
               
               {skinHealth > 0 && (
-                <div>
+                <div className="scale-in stagger-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-card-foreground">Skin Health</span>
-                    <span className="text-sm text-muted-foreground" data-testid="skin-health-score">
+                    <span className="text-sm font-medium text-card-foreground slide-in-left">Skin Health</span>
+                    <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="skin-health-score">
                       {Math.round(skinHealth)}%
                     </span>
                   </div>
-                  <Progress value={skinHealth} className="h-3" />
+                  <Progress value={skinHealth} className="h-3 glow" />
                 </div>
               )}
             </div>
             
             {/* Weekly Progress Chart Placeholder */}
             {scans.length > 0 && (
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="text-sm font-medium text-card-foreground mb-3 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-2" />
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg scale-in stagger-4 hover-lift">
+                <h4 className="text-sm font-medium text-card-foreground mb-3 flex items-center typewriter">
+                  <TrendingUp className="w-4 h-4 mr-2 heartbeat" />
                   This Week
                 </h4>
                 <div className="flex items-end justify-between h-16">
@@ -213,14 +214,17 @@ export default function ScanHistory() {
                     const hasData = index < scans.length;
                     const height = hasData ? Math.random() * 80 + 20 : 20;
                     return (
-                      <div key={day} className="flex flex-col items-center">
+                      <div key={day} className="flex flex-col items-center scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
                         <div 
-                          className={`w-4 rounded-t transition-all duration-500 ${
-                            hasData ? 'bg-primary' : 'bg-muted'
+                          className={`w-4 rounded-t transition-all duration-1000 scan-progress hover-glow ${
+                            hasData ? 'bg-primary glow' : 'bg-muted'
                           }`}
-                          style={{ height: `${height}%` }}
+                          style={{ 
+                            height: `${height}%`,
+                            animationDelay: `${index * 0.2}s`
+                          }}
                         />
-                        <span className="text-xs text-muted-foreground mt-1" data-testid={`chart-day-${day.toLowerCase()}`}>
+                        <span className="text-xs text-muted-foreground mt-1 fade-in stagger-2" data-testid={`chart-day-${day.toLowerCase()}`}>
                           {day}
                         </span>
                       </div>
