@@ -57,8 +57,13 @@ export default function Home() {
               <Button variant="ghost" size="icon" className="hover-scale glow" data-testid="button-notifications">
                 <Activity className="h-4 w-4" />
               </Button>
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center breathe hover-glow">
-                <span className="text-primary-foreground text-sm font-medium" data-testid="user-avatar">JD</span>
+              <div className="w-8 h-8 rounded-full overflow-hidden breathe hover-glow border-2 border-primary/20">
+                <img 
+                  src="/attached_assets/generated_images/Professional_healthcare_doctor_portrait_27ca2068.png" 
+                  alt="Dr. Sarah Johnson"
+                  className="w-full h-full object-cover"
+                  data-testid="user-avatar"
+                />
               </div>
             </div>
           </div>
@@ -68,17 +73,27 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 fade-in stagger-3">
-          <div className="bg-gradient-to-r from-primary to-blue-600 rounded-xl p-6 text-primary-foreground shimmer hover-lift">
-            <h2 className="text-2xl font-semibold mb-2 bounce-in" data-testid="text-welcome">Good morning, Dr. Sarah Johnson</h2>
-            <p className="text-primary-foreground/80 slide-in-left stagger-1">Ready to help your patients with AI-powered health analysis</p>
-            <div className="mt-4 flex items-center space-x-4">
-              <div className="flex items-center space-x-2 scale-in stagger-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
-                <span className="text-sm" data-testid="status-vision">AI Vision Ready</span>
-              </div>
-              <div className="flex items-center space-x-2 scale-in stagger-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation" style={{ animationDelay: '0.5s' }}></div>
-                <span className="text-sm" data-testid="status-voice">Voice Assistant Active</span>
+          <div className="relative bg-gradient-to-r from-primary to-blue-600 rounded-xl p-6 text-primary-foreground shimmer hover-lift overflow-hidden">
+            {/* Background AI Technology Image */}
+            <div className="absolute inset-0 opacity-20">
+              <img 
+                src="/attached_assets/generated_images/AI_healthcare_technology_background_31832b76.png" 
+                alt="AI Healthcare Technology"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="relative z-10">
+              <h2 className="text-2xl font-semibold mb-2 bounce-in" data-testid="text-welcome">Good morning, Dr. Sarah Johnson</h2>
+              <p className="text-primary-foreground/80 slide-in-left stagger-1">Ready to help your patients with AI-powered health analysis</p>
+              <div className="mt-4 flex items-center space-x-4">
+                <div className="flex items-center space-x-2 scale-in stagger-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
+                  <span className="text-sm" data-testid="status-vision">AI Vision Ready</span>
+                </div>
+                <div className="flex items-center space-x-2 scale-in stagger-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation" style={{ animationDelay: '0.5s' }}></div>
+                  <span className="text-sm" data-testid="status-voice">Voice Assistant Active</span>
+                </div>
               </div>
             </div>
           </div>
@@ -99,10 +114,13 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-card-foreground mb-2">Nutrition Analysis</h3>
               <p className="text-muted-foreground text-sm mb-4">Analyze nutrient deficiencies through body scan imaging using advanced AI vision technology</p>
               
-              {/* Stock photo placeholder */}
-              <div className="w-full h-32 bg-green-100 rounded-lg mb-4 flex items-center justify-center">
-                <Apple className="text-green-500 w-8 h-8" />
-                <span className="ml-2 text-green-600 text-sm">Healthy nutrition analysis</span>
+              {/* Nutrition Image */}
+              <div className="w-full h-32 bg-green-100 rounded-lg mb-4 overflow-hidden hover-scale">
+                <img 
+                  src="/attached_assets/generated_images/Healthy_nutrition_foods_display_3f0152af.png" 
+                  alt="Healthy nutrition foods"
+                  className="w-full h-full object-cover"
+                />
               </div>
               
               <Button 
@@ -129,10 +147,13 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-card-foreground mb-2">Acne Analysis</h3>
               <p className="text-muted-foreground text-sm mb-4">Detect and assess facial acne problems with AI-powered dermatological analysis</p>
               
-              {/* Stock photo placeholder */}
-              <div className="w-full h-32 bg-blue-100 rounded-lg mb-4 flex items-center justify-center">
-                <UserCheck className="text-blue-500 w-8 h-8" />
-                <span className="ml-2 text-blue-600 text-sm">Skincare analysis</span>
+              {/* Skincare Image */}
+              <div className="w-full h-32 bg-blue-100 rounded-lg mb-4 overflow-hidden hover-scale">
+                <img 
+                  src="/attached_assets/generated_images/Skincare_and_dermatology_concept_cded0f39.png" 
+                  alt="Skincare and dermatology"
+                  className="w-full h-full object-cover"
+                />
               </div>
               
               <Button 
