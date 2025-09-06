@@ -74,34 +74,34 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-testid="camera-interface-modal">
-      <Card className="w-full max-w-4xl mx-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" data-testid="camera-interface-modal">
+      <Card className="w-full max-w-4xl mx-4 scale-in bounce-in">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 slide-in-left">
             <div className="flex items-center space-x-3">
-              <h3 className="text-lg font-semibold text-card-foreground" data-testid="scan-title">
+              <h3 className="text-lg font-semibold text-card-foreground typewriter" data-testid="scan-title">
                 {getScanTypeLabel(scanType)}
               </h3>
-              <Badge variant="secondary" data-testid="scan-type-badge">{scanType}</Badge>
+              <Badge variant="secondary bounce-in stagger-1" data-testid="scan-type-badge">{scanType}</Badge>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 slide-in-right">
               {isRecording && (
                 <>
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-muted-foreground" data-testid="status-recording">Recording</span>
+                  <div className="w-2 h-2 bg-red-500 rounded-full pulse-animation glow"></div>
+                  <span className="text-sm text-muted-foreground fade-in" data-testid="status-recording">Recording</span>
                 </>
               )}
               {analyzeMutation.isPending && (
-                <Badge variant="secondary" data-testid="status-analyzing">Analyzing...</Badge>
+                <Badge variant="secondary shimmer" data-testid="status-analyzing">Analyzing...</Badge>
               )}
-              <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-camera">
+              <Button variant="ghost" size="icon" onClick={onClose} className="hover-scale" data-testid="button-close-camera">
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
           
           {/* Camera Feed */}
-          <div className="relative bg-muted rounded-lg aspect-video flex items-center justify-center mb-4 overflow-hidden">
+          <div className="relative bg-muted rounded-lg aspect-video flex items-center justify-center mb-4 overflow-hidden scale-in hover-glow">
             {capturedImage ? (
               <img 
                 src={capturedImage} 
@@ -137,22 +137,32 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
             )}
             
             {analyzeMutation.isPending && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center fade-in">
                 <div className="text-center text-white">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                  <p className="font-medium" data-testid="text-analyzing">Analyzing with AI Vision...</p>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4 glow"></div>
+                  <p className="font-medium typewriter" data-testid="text-analyzing">Analyzing with AI Vision...</p>
+                  <div className="mt-4 flex justify-center space-x-1">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="w-2 h-2 bg-white rounded-full voice-wave"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
           </div>
           
           {/* Controls */}
-          <div className="flex justify-center space-x-3">
+          <div className="flex justify-center space-x-3 slide-in-left stagger-3">
             {!capturedImage ? (
               <>
                 <Button 
                   onClick={captureImage}
                   disabled={!isRecording || analyzeMutation.isPending}
+                  className="hover-scale glow"
                   data-testid="button-capture"
                 >
                   <Camera className="mr-2 h-4 w-4" />
@@ -161,6 +171,7 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
                 <Button 
                   variant="destructive" 
                   onClick={onClose}
+                  className="hover-scale"
                   data-testid="button-cancel"
                 >
                   <Square className="mr-2 h-4 w-4" />
@@ -172,6 +183,7 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
                 variant="outline" 
                 onClick={retakeImage}
                 disabled={analyzeMutation.isPending}
+                className="hover-scale breathe"
                 data-testid="button-retake"
               >
                 <Camera className="mr-2 h-4 w-4" />
@@ -182,13 +194,13 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
           
           {/* Analysis Progress */}
           {analyzeMutation.isPending && (
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-2 fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground" data-testid="progress-label">Processing Image...</span>
-                <span className="text-sm font-medium text-primary" data-testid="progress-percentage">Processing</span>
+                <span className="text-sm text-muted-foreground typewriter" data-testid="progress-label">Processing Image...</span>
+                <span className="text-sm font-medium text-primary pulse-animation" data-testid="progress-percentage">Processing</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full animate-pulse" style={{ width: "60%" }}></div>
+              <div className="w-full bg-muted rounded-full h-2 hover-glow">
+                <div className="bg-primary h-2 rounded-full shimmer scan-progress" style={{ width: "60%" }}></div>
               </div>
             </div>
           )}
