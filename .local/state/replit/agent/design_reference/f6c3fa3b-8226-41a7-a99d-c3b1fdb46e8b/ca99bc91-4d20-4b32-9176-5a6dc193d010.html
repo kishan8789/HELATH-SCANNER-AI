@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthScan AI - Advanced Health Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                    colors: {
+                        background: "var(--background)",
+                        foreground: "var(--foreground)",
+                        card: {
+                            DEFAULT: "var(--card)",
+                            foreground: "var(--card-foreground)",
+                        },
+                        popover: {
+                            DEFAULT: "var(--popover)",
+                            foreground: "var(--popover-foreground)",
+                        },
+                        primary: {
+                            DEFAULT: "var(--primary)",
+                            foreground: "var(--primary-foreground)",
+                        },
+                        secondary: {
+                            DEFAULT: "var(--secondary)",
+                            foreground: "var(--secondary-foreground)",
+                        },
+                        muted: {
+                            DEFAULT: "var(--muted)",
+                            foreground: "var(--muted-foreground)",
+                        },
+                        accent: {
+                            DEFAULT: "var(--accent)",
+                            foreground: "var(--accent-foreground)",
+                        },
+                        destructive: {
+                            DEFAULT: "var(--destructive)",
+                            foreground: "var(--destructive-foreground)",
+                        },
+                        border: "var(--border)",
+                        input: "var(--input)",
+                        ring: "var(--ring)",
+                        chart: {
+                            "1": "var(--chart-1)",
+                            "2": "var(--chart-2)",
+                            "3": "var(--chart-3)",
+                            "4": "var(--chart-4)",
+                            "5": "var(--chart-5)",
+                        }
+                    },
+                    fontFamily: {
+                        sans: ["var(--font-sans)"],
+                        serif: ["var(--font-serif)"],
+                        mono: ["var(--font-mono)"],
+                    }
+                },
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(221.2 83.2% 53.3%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222.2 84% 4.9%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(210 40% 96%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 84.2% 60.2%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(221.2 83.2% 53.3%);
+            --radius: 0.75rem;
+            --font-sans: 'Inter', system-ui, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background: var(--background);
+            color: var(--foreground);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .scan-progress {
+            animation: scan-progress 3s ease-in-out infinite;
+        }
+        
+        @keyframes scan-progress {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.2); }
+        }
+        
+        .voice-wave {
+            animation: voice-wave 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes voice-wave {
+            0%, 100% { height: 20px; }
+            50% { height: 40px; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <!-- @COMPONENT: Header [navigation and user profile] -->
+    <header class="bg-card border-b border-border shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-primary-foreground text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-semibold text-foreground">HealthScan AI</h1>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-primary font-medium">Dashboard</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors">History</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors">Reports</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors">Settings</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
+                        <i class="fas fa-bell text-accent-foreground"></i>
+                    </button>
+                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <span class="text-primary-foreground text-sm font-medium" data-bind="user.initials">JD</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: WelcomeSection [personalized greeting and status] -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-primary to-blue-600 rounded-xl p-6 text-primary-foreground">
+                <h2 class="text-2xl font-semibold mb-2">Good morning, <span data-bind="user.name" data-mock="true">Dr. Sarah Johnson</span></h2>
+                <p class="text-primary-foreground/80">Ready to help your patients with AI-powered health analysis</p>
+                <div class="mt-4 flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span class="text-sm">AI Vision Ready</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span class="text-sm">Voice Assistant Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: WelcomeSection -->
+
+        <!-- @COMPONENT: ScanOptions [main scanning interface cards] -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Nutrition Scan Card -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-apple-alt text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">AI Vision</span>
+                </div>
+                
+                <h3 class="text-lg font-semibold text-card-foreground mb-2">Nutrition Analysis</h3>
+                <p class="text-muted-foreground text-sm mb-4">Analyze nutrient deficiencies through body scan imaging using advanced AI vision technology</p>
+                
+                <!-- Healthy food nutrition image -->
+                <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=200" alt="Healthy colorful vegetables and fruits" class="w-full h-32 object-cover rounded-lg mb-4" data-mock-image="true" />
+                
+                <button class="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium" data-event="click:startNutritionScan">
+                    <i class="fas fa-camera mr-2"></i>Start Body Scan
+                </button>
+            </div>
+            
+            <!-- Skin Analysis Card -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-md text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">GPT-4o Vision</span>
+                </div>
+                
+                <h3 class="text-lg font-semibold text-card-foreground mb-2">Acne Analysis</h3>
+                <p class="text-muted-foreground text-sm mb-4">Detect and assess facial acne problems with AI-powered dermatological analysis</p>
+                
+                <!-- Skincare acne treatment image -->
+                <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=200" alt="Clean skincare products for acne treatment" class="w-full h-32 object-cover rounded-lg mb-4" data-mock-image="true" />
+                
+                <button class="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium" data-event="click:startSkinScan">
+                    <i class="fas fa-camera mr-2"></i>Start Face Scan
+                </button>
+            </div>
+            
+            <!-- Voice Assistant Card -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-microphone text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">TTS API</span>
+                </div>
+                
+                <h3 class="text-lg font-semibold text-card-foreground mb-2">Voice Assistant</h3>
+                <p class="text-muted-foreground text-sm mb-4">Hands-free operation with AI voice commands and text-to-speech capabilities</p>
+                
+                <!-- Voice waveform visualization -->
+                <div class="flex items-center justify-center h-32 bg-muted rounded-lg mb-4">
+                    <div class="flex items-end space-x-1">
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 20px;"></div>
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 35px; animation-delay: 0.1s;"></div>
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 25px; animation-delay: 0.2s;"></div>
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 40px; animation-delay: 0.3s;"></div>
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 30px; animation-delay: 0.4s;"></div>
+                        <div class="w-2 bg-purple-500 rounded-full voice-wave" style="height: 20px; animation-delay: 0.5s;"></div>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium" data-event="click:activateVoiceAssistant">
+                    <i class="fas fa-microphone mr-2"></i>Activate Voice
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ScanOptions -->
+
+        <!-- @COMPONENT: ActiveScanInterface [camera and analysis display] -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <!-- Camera Interface -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-card-foreground">Live Camera Feed</h3>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-red-500 rounded-full pulse-animation"></div>
+                        <span class="text-sm text-muted-foreground">Recording</span>
+                    </div>
+                </div>
+                
+                <!-- Medical scanning equipment image as camera placeholder -->
+                <div class="relative bg-muted rounded-lg aspect-video flex items-center justify-center mb-4 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Advanced medical scanning equipment in modern clinic" class="w-full h-full object-cover" data-mock-image="true" />
+                    <div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                        <div class="text-center">
+                            <i class="fas fa-camera text-4xl text-primary mb-2"></i>
+                            <p class="text-primary font-medium">Camera Feed Active</p>
+                            <!-- @FUNCTIONALITY: Camera access through browser APIs for real-time image capture -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button class="flex-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:captureImage">
+                        <i class="fas fa-camera mr-2"></i>Capture
+                    </button>
+                    <button class="flex-1 bg-destructive text-destructive-foreground py-2 rounded-lg hover:bg-destructive/90 transition-colors" data-event="click:stopScan">
+                        <i class="fas fa-stop mr-2"></i>Stop
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Analysis Results -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-card-foreground">AI Analysis Results</h3>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Processing Complete</span>
+                </div>
+                
+                <!-- Analysis Progress -->
+                <div class="space-y-4 mb-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-muted-foreground">Image Analysis</span>
+                        <span class="text-sm font-medium text-green-600">100%</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-muted-foreground">AI Processing</span>
+                        <span class="text-sm font-medium text-green-600">100%</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <!-- Results Summary -->
+                <div class="space-y-3">
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
+                        <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                        <div>
+                            <p class="text-sm font-medium text-green-800" data-mock="true">Vitamin D levels appear optimal</p>
+                            <p class="text-xs text-green-600">Confidence: 94%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+                        <div>
+                            <p class="text-sm font-medium text-yellow-800" data-mock="true">Potential iron deficiency detected</p>
+                            <p class="text-xs text-yellow-600">Confidence: 87%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+                        <div>
+                            <p class="text-sm font-medium text-blue-800" data-mock="true">Recommended blood test for confirmation</p>
+                            <p class="text-xs text-blue-600">Priority: Medium</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ActiveScanInterface -->
+
+        <!-- @COMPONENT: RecommendationsSection [health recommendations and insights] -->
+        <div class="bg-card rounded-xl p-6 border border-border shadow-sm mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-card-foreground">AI Health Recommendations</h3>
+                <button class="text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                    View All <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-leaf text-green-600 text-lg mr-2"></i>
+                        <h4 class="font-medium text-green-800">Nutrition</h4>
+                    </div>
+                    <p class="text-sm text-green-700 mb-3" data-mock="true">Increase iron-rich foods like spinach, red meat, and legumes</p>
+                    <div class="flex items-center text-xs text-green-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>Updated 2 hours ago</span>
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-dumbbell text-blue-600 text-lg mr-2"></i>
+                        <h4 class="font-medium text-blue-800">Exercise</h4>
+                    </div>
+                    <p class="text-sm text-blue-700 mb-3" data-mock="true">30 minutes of cardio exercise can improve circulation and energy levels</p>
+                    <div class="flex items-center text-xs text-blue-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>Updated 1 hour ago</span>
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-moon text-purple-600 text-lg mr-2"></i>
+                        <h4 class="font-medium text-purple-800">Sleep</h4>
+                    </div>
+                    <p class="text-sm text-purple-700 mb-3" data-mock="true">Maintain consistent 7-8 hour sleep schedule for optimal recovery</p>
+                    <div class="flex items-center text-xs text-purple-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>Updated 30 minutes ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: RecommendationsSection -->
+
+        <!-- @COMPONENT: ScanHistory [recent scans and progress tracking] -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Recent Scans -->
+            <div class="lg:col-span-2 bg-card rounded-xl p-6 border border-border shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-card-foreground">Recent Scans</h3>
+                    <button class="text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                        View History <i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+                
+                <!-- @MAP: scanHistory.map(scan => ( -->
+                <div class="space-y-4">
+                    <div class="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-apple-alt text-green-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-card-foreground" data-mock="true">Nutrition Analysis</h4>
+                            <p class="text-sm text-muted-foreground" data-mock="true">Body scan completed - Iron deficiency detected</p>
+                            <div class="flex items-center mt-1 text-xs text-muted-foreground">
+                                <i class="fas fa-calendar mr-1"></i>
+                                <span data-mock="true">Today, 2:30 PM</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-medium text-yellow-600">Attention Needed</span>
+                            <p class="text-xs text-muted-foreground">87% confidence</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-user-md text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-card-foreground" data-mock="true">Acne Analysis</h4>
+                            <p class="text-sm text-muted-foreground" data-mock="true">Face scan completed - Mild acne detected</p>
+                            <div class="flex items-center mt-1 text-xs text-muted-foreground">
+                                <i class="fas fa-calendar mr-1"></i>
+                                <span data-mock="true">Yesterday, 10:15 AM</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-medium text-green-600">Normal</span>
+                            <p class="text-xs text-muted-foreground">92% confidence</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-heartbeat text-purple-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-card-foreground" data-mock="true">General Health Check</h4>
+                            <p class="text-sm text-muted-foreground" data-mock="true">Comprehensive scan - Overall health good</p>
+                            <div class="flex items-center mt-1 text-xs text-muted-foreground">
+                                <i class="fas fa-calendar mr-1"></i>
+                                <span data-mock="true">2 days ago, 4:45 PM</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-medium text-green-600">Excellent</span>
+                            <p class="text-xs text-muted-foreground">95% confidence</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+            
+            <!-- Health Progress -->
+            <div class="bg-card rounded-xl p-6 border border-border shadow-sm">
+                <h3 class="text-xl font-semibold text-card-foreground mb-6">Health Progress</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-card-foreground">Overall Health</span>
+                            <span class="text-sm text-muted-foreground" data-mock="true">85%</span>
+                        </div>
+                        <div class="w-full bg-muted rounded-full h-3">
+                            <div class="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-card-foreground">Nutrition Status</span>
+                            <span class="text-sm text-muted-foreground" data-mock="true">72%</span>
+                        </div>
+                        <div class="w-full bg-muted rounded-full h-3">
+                            <div class="bg-gradient-to-r from-yellow-500 to-yellow-400 h-3 rounded-full" style="width: 72%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-card-foreground">Skin Health</span>
+                            <span class="text-sm text-muted-foreground" data-mock="true">90%</span>
+                        </div>
+                        <div class="w-full bg-muted rounded-full h-3">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weekly Progress Chart -->
+                <div class="mt-6 p-4 bg-muted/50 rounded-lg">
+                    <h4 class="text-sm font-medium text-card-foreground mb-3">This Week</h4>
+                    <div class="flex items-end justify-between h-16">
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-primary rounded-t" style="height: 60%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Mon</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-primary rounded-t" style="height: 75%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Tue</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-primary rounded-t" style="height: 45%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Wed</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-primary rounded-t" style="height: 90%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Thu</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-primary rounded-t" style="height: 85%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Fri</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-muted rounded-t" style="height: 30%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Sat</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-4 bg-muted rounded-t" style="height: 25%"></div>
+                            <span class="text-xs text-muted-foreground mt-1">Sun</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ScanHistory -->
+    </main>
+
+    <!-- @COMPONENT: VoiceAssistantOverlay [floating voice interface] -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="w-14 h-14 bg-primary hover:bg-primary/90 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110" data-event="click:toggleVoiceAssistant">
+            <i class="fas fa-microphone text-primary-foreground text-lg"></i>
+        </button>
+        
+        <!-- Voice Assistant Panel (hidden by default) -->
+        <div class="absolute bottom-16 right-0 w-80 bg-card rounded-xl shadow-xl border border-border p-4 hidden" id="voicePanel">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="font-medium text-card-foreground">Voice Assistant</h4>
+                <button class="text-muted-foreground hover:text-foreground">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-center py-6">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-6 bg-primary rounded-full voice-wave"></div>
+                    <div class="w-3 h-8 bg-primary rounded-full voice-wave" style="animation-delay: 0.1s;"></div>
+                    <div class="w-3 h-4 bg-primary rounded-full voice-wave" style="animation-delay: 0.2s;"></div>
+                    <div class="w-3 h-10 bg-primary rounded-full voice-wave" style="animation-delay: 0.3s;"></div>
+                    <div class="w-3 h-6 bg-primary rounded-full voice-wave" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <p class="text-sm text-muted-foreground mb-2">"Start a nutrition scan"</p>
+                <p class="text-xs text-muted-foreground">Listening... Powered by OpenAI TTS</p>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: VoiceAssistantOverlay -->
+
+    <script>
+        // Simple interaction handlers for demo purposes
+        (function() {
+            // TODO: Implement camera access through browser APIs
+            // TODO: Integrate OpenAI GPT-4o Vision API for image analysis
+            // TODO: Implement OpenAI TTS API for voice assistant
+            // TODO: Add real-time image processing and analysis
+            // TODO: Implement secure image handling and privacy protection
+            
+            // Voice assistant toggle
+            const voiceButton = document.querySelector('[data-event="click:toggleVoiceAssistant"]');
+            const voicePanel = document.getElementById('voicePanel');
+            
+            if (voiceButton && voicePanel) {
+                voiceButton.addEventListener('click', function() {
+                    voicePanel.classList.toggle('hidden');
+                });
+            }
+            
+            // Scan button interactions
+            const scanButtons = document.querySelectorAll('[data-event^="click:start"], [data-event="click:captureImage"]');
+            scanButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement actual scanning logic
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                    setTimeout(() => {
+                        button.innerHTML = button.innerHTML.replace('Processing...', 'Complete');
+                    }, 3000);
+                });
+            });
+            
+            // Progressive fade-in animations
+            const cards = document.querySelectorAll('.bg-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+        })();
+    </script>
+</body>
+</html>

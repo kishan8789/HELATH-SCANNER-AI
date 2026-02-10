@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-// Speech Recognition Hook
+// 1. Hook for Listening (Speech to Text)
 export const useSpeechRecognition = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -8,189 +8,111 @@ export const useSpeechRecognition = () => {
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    // Check for speech recognition support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (SpeechRecognition) {
       setIsSupported(true);
-      recognitionRef.current = new SpeechRecognition();
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
       
-      const recognition = recognitionRef.current;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
+      recognition.continuous = false; 
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN'; // Hinglish recognition ke liye best setting
 
+      recognition.onstart = () => setIsListening(true);
       recognition.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcriptPart = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcriptPart + ' ';
-          } else {
-            interimTranscript += transcriptPart;
-          }
-        }
-
-        setTranscript(finalTranscript || interimTranscript);
+        const text = event.results[0][0].transcript;
+        setTranscript(text);
       };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-    } else {
-      console.warn('Speech Recognition not supported');
-      setIsSupported(false);
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
     }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
   }, []);
 
   const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
+    if (recognitionRef.current) {
       setTranscript('');
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  }, [isListening]);
-
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  }, [isListening]);
-
-  return {
-    isListening,
-    transcript,
-    isSupported,
-    startListening,
-    stopListening
-  };
-};
-
-// Speech Synthesis Hook
-export const useSpeechSynthesis = () => {
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
-
-  useEffect(() => {
-    if ('speechSynthesis' in window) {
-      setIsSupported(true);
-    } else {
-      console.warn('Speech Synthesis not supported');
-      setIsSupported(false);
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        recognitionRef.current.stop();
+      }
     }
   }, []);
 
-  const speak = useCallback((text: string, options: {
-    voice?: SpeechSynthesisVoice;
-    rate?: number;
-    pitch?: number;
-    volume?: number;
-  } = {}) => {
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) recognitionRef.current.stop();
+  }, []);
+
+  return { isListening, transcript, isSupported, startListening, stopListening, setTranscript };
+};
+
+// 2. Hook for Speaking (Text to Speech) - Optimized for long automated reports
+export const useSpeechSynthesis = () => {
+  const isSupported = 'speechSynthesis' in window;
+
+  const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+    // Pehle se chal rahi awaaz ko cancel karein
+    window.speechSynthesis.cancel(); 
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    utterance.voice = options.voice || null;
-    utterance.rate = options.rate || 1;
-    utterance.pitch = options.pitch || 1;
-    utterance.volume = options.volume || 1;
+    // Modern Voice configurations
+    utterance.lang = 'hi-IN'; // Indian accent
+    utterance.rate = 1.08;    // Slightly faster taaki long report boring na lage
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    // Fix for long text: Browser timeout prevention
+    utterance.onend = () => {
+       console.log("Speech finished successfully.");
+    };
 
     window.speechSynthesis.speak(utterance);
   }, [isSupported]);
 
-  const cancel = useCallback(() => {
-    if (isSupported) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  }, [isSupported]);
-
-  const getVoices = useCallback((): SpeechSynthesisVoice[] => {
-    if (!isSupported) return [];
-    return window.speechSynthesis.getVoices();
-  }, [isSupported]);
-
-  return {
-    isSpeaking,
-    isSupported,
-    speak,
-    cancel,
-    getVoices
-  };
+  return { isSupported, speak, cancel: () => window.speechSynthesis.cancel() };
 };
 
-// Voice Command Processing
-export const processVoiceCommand = (command: string): {
-  action: string;
-  parameters?: Record<string, any>;
-  response: string;
-} => {
+// 3. Command Processing Logic (Added specific actions for Medicine & Doctor)
+export const processVoiceCommand = (command: string) => {
   const lowerCommand = command.toLowerCase().trim();
 
-  // Start nutrition scan
-  if (lowerCommand.includes('nutrition') || lowerCommand.includes('body scan')) {
-    return {
-      action: 'start_nutrition_scan',
-      response: 'Starting nutrition analysis. Please position yourself in front of the camera for a body scan.'
+  // --- Scan Commands ---
+  if (lowerCommand.includes('nutrition') || lowerCommand.includes('body')) {
+    return { action: 'start_nutrition_scan', response: 'Body nutrition scan shuru kar raha hoon. Kripya camera ke samne position lein.' };
+  }
+  if (lowerCommand.includes('scan') || lowerCommand.includes('face') || lowerCommand.includes('skin')) {
+    return { action: 'start_scan', response: 'Skin analysis process shuru ho raha hai.' };
+  }
+
+  // --- Medicine & Health Info ---
+  if (lowerCommand.includes('medicine') || lowerCommand.includes('dawai') || lowerCommand.includes('vitamin')) {
+    return { 
+      action: 'search_medicine', 
+      response: 'Main aapke liye generic medicines aur zaroori supplements search kar raha hoon. Kripya dawai lene se pehle doctor se consult zaroor karein.' 
     };
   }
 
-  // Start acne scan
-  if (lowerCommand.includes('acne') || lowerCommand.includes('face scan') || lowerCommand.includes('skin')) {
-    return {
-      action: 'start_acne_scan',
-      response: 'Starting acne analysis. Please position your face clearly in front of the camera.'
+  // --- Doctor Consultation ---
+  if (lowerCommand.includes('doctor') || lowerCommand.includes('consult') || lowerCommand.includes('appointment')) {
+    return { 
+      action: 'find_doctor', 
+      response: 'Theek hai, main aapko doctor appointment booking portal par le jaa raha hoon.' 
     };
   }
 
-  // View history
-  if (lowerCommand.includes('history') || lowerCommand.includes('previous') || lowerCommand.includes('past')) {
-    return {
-      action: 'view_history',
-      response: 'Here are your recent health scans and analysis results.'
-    };
+  // --- History/Navigation ---
+  if (lowerCommand.includes('history') || lowerCommand.includes('purana') || lowerCommand.includes('record')) {
+    return { action: 'view_history', response: 'Aapke purane scans aur reports load ho rahe hain.' };
   }
 
-  // Help command
-  if (lowerCommand.includes('help') || lowerCommand.includes('what can you do')) {
-    return {
-      action: 'help',
-      response: 'I can help you start nutrition scans by saying "nutrition scan", acne analysis by saying "face scan", or view your scan history by saying "show history". What would you like to do?'
-    };
+  // --- Help/General ---
+  if (lowerCommand.includes('help') || lowerCommand.includes('madad')) {
+    return { action: 'help', response: 'Main aapki body scan, skin analysis, dawai search aur doctor appointment mein madad kar sakta hoon. Bas kahiye: Start Scan.' };
   }
 
-  // Stop command
-  if (lowerCommand.includes('stop') || lowerCommand.includes('cancel')) {
-    return {
-      action: 'stop',
-      response: 'Stopping current operation.'
-    };
-  }
-
-  // Default response
-  return {
-    action: 'unknown',
-    response: 'I didn\'t understand that command. Try saying "nutrition scan", "face scan", "show history", or "help" for assistance.'
-  };
+  return { action: 'unknown', response: 'Maine suna: ' + command + '. Kya main iske liye scan shuru karun?' };
 };

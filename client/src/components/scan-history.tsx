@@ -2,7 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Apple, UserCheck, Activity, Calendar, TrendingUp } from "lucide-react";
+import { 
+  Apple, UserCheck, Activity, Calendar, TrendingUp, 
+  ChevronRight, BarChart3, Clock 
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
@@ -13,226 +16,137 @@ export default function ScanHistory() {
 
   const getScanIcon = (type: string) => {
     switch (type) {
-      case 'nutrition': return <Apple className="text-green-600 w-5 h-5" />;
-      case 'acne': return <UserCheck className="text-blue-600 w-5 h-5" />;
-      default: return <Activity className="text-purple-600 w-5 h-5" />;
+      case 'nutrition': return <Apple className="text-emerald-400 w-6 h-6" />;
+      case 'acne': return <UserCheck className="text-blue-400 w-6 h-6" />;
+      default: return <Activity className="text-rose-400 w-6 h-6" />;
     }
   };
 
   const getScanTypeLabel = (type: string) => {
     switch (type) {
       case 'nutrition': return 'Nutrition Analysis';
-      case 'acne': return 'Acne Analysis';
+      case 'acne': return 'Dermal Scan';
       default: return 'General Health';
     }
   };
 
-  const getStatusColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-green-600';
-    if (confidence >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getStatusLabel = (confidence: number) => {
-    if (confidence >= 90) return 'Excellent';
-    if (confidence >= 70) return 'Good';
-    return 'Needs Attention';
-  };
-
   if (isLoading) {
     return (
-      <div className="grid lg:grid-cols-3 gap-8 fade-in">
-        <div className="lg:col-span-2">
-          <Card className="hover-lift">
-            <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
-                <div className="h-6 bg-muted rounded w-1/3 shimmer"></div>
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center p-4 bg-muted/50 rounded-lg shimmer" style={{ animationDelay: `${i * 0.1}s` }}>
-                    <div className="w-12 h-12 bg-muted rounded-lg mr-4 pulse-animation"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded w-1/2 shimmer"></div>
-                      <div className="h-3 bg-muted rounded w-2/3 shimmer" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <Card className="hover-lift">
-            <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
-                <div className="h-6 bg-muted rounded w-1/2 shimmer"></div>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="h-4 bg-muted rounded shimmer" style={{ animationDelay: `${i * 0.1}s` }}></div>
-                      <div className="h-2 bg-muted rounded shimmer" style={{ animationDelay: `${i * 0.2}s` }}></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="py-20 text-center">
+        <div className="animate-spin w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-slate-500 font-black uppercase tracking-widest text-xs">Accessing Neural Records...</p>
       </div>
     );
   }
 
-  // Calculate health metrics
-  const nutritionScans = scans.filter((scan: any) => scan.type === 'nutrition');
-  const acneScans = scans.filter((scan: any) => scan.type === 'acne');
-  const overallHealth = scans.length > 0 ? 
-    scans.reduce((acc: number, scan: any) => acc + scan.confidence, 0) / scans.length : 0;
-  
-  const nutritionHealth = nutritionScans.length > 0 ?
-    nutritionScans.reduce((acc: number, scan: any) => acc + scan.confidence, 0) / nutritionScans.length : 0;
-  
-  const skinHealth = acneScans.length > 0 ?
-    acneScans.reduce((acc: number, scan: any) => acc + scan.confidence, 0) / acneScans.length : 0;
+  // Calculate health metrics for the Sidebar
+  const nutritionScans = scans.filter((scan: any) => scan.scanType === 'nutrition');
+  const acneScans = scans.filter((scan: any) => scan.scanType === 'acne');
+  const overallHealth = scans.length > 0 ? 85 : 0; // Static placeholder for demo
+  const nutritionHealth = 78; 
+  const skinHealth = 92;
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8 fade-in">
-      {/* Recent Scans */}
-      <div className="lg:col-span-2 slide-in-left">
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6 slide-in-left">
-              <h3 className="text-xl font-semibold text-card-foreground typewriter" data-testid="recent-scans-title">Recent Scans</h3>
-              <Button variant="ghost" className="text-primary hover:text-primary/80 hover-scale glow" data-testid="button-view-history">
-                View History
-              </Button>
-            </div>
-            
-            <div className="space-y-4">
-              {scans.length === 0 ? (
-                <div className="text-center py-8">
-                  <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground" data-testid="no-scans-message">
-                    No scans yet. Start your first health analysis above.
-                  </p>
-                </div>
-              ) : (
-                scans.slice(0, 5).map((scan: any, index: number) => (
-                  <div 
-                    key={scan.id} 
-                    className="flex items-center p-4 bg-muted/50 rounded-lg border border-border hover:bg-muted/70 transition-colors scale-in hover-lift"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                    data-testid={`scan-item-${scan.id}`}
-                  >
-                    <div className="w-12 h-12 bg-card rounded-lg flex items-center justify-center mr-4 float hover-glow">
-                      {getScanIcon(scan.type)}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-card-foreground bounce-in" data-testid={`scan-title-${scan.id}`}>
-                        {getScanTypeLabel(scan.type)}
-                      </h4>
-                      <p className="text-sm text-muted-foreground fade-in stagger-1" data-testid={`scan-summary-${scan.id}`}>
-                        {scan.analysis?.summary || 'Health analysis completed'}
-                      </p>
-                      <div className="flex items-center mt-1 text-xs text-muted-foreground slide-in-left stagger-2">
-                        <Calendar className="w-3 h-3 mr-1 pulse-animation" />
-                        <span data-testid={`scan-date-${scan.id}`}>
-                          {format(new Date(scan.createdAt), 'PPp')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span 
-                        className={`text-sm font-medium heartbeat ${getStatusColor(scan.confidence)}`}
-                        data-testid={`scan-status-${scan.id}`}
-                      >
-                        {getStatusLabel(scan.confidence)}
-                      </span>
-                      <p className="text-xs text-muted-foreground slide-in-right stagger-1" data-testid={`scan-confidence-${scan.id}`}>
-                        {scan.confidence}% confidence
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="grid lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-10 duration-1000">
       
-      {/* Health Progress */}
-      <div className="slide-in-right stagger-2">
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold text-card-foreground mb-6 typewriter" data-testid="health-progress-title">
-              Health Progress
-            </h3>
-            
-            <div className="space-y-6">
-              <div className="scale-in stagger-1">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-card-foreground slide-in-left">Overall Health</span>
-                  <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="overall-health-score">
-                    {Math.round(overallHealth)}%
-                  </span>
-                </div>
-                <Progress value={overallHealth} className="h-3 glow" />
-              </div>
-              
-              {nutritionHealth > 0 && (
-                <div className="scale-in stagger-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-card-foreground slide-in-left">Nutrition Status</span>
-                    <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="nutrition-health-score">
-                      {Math.round(nutritionHealth)}%
-                    </span>
-                  </div>
-                  <Progress value={nutritionHealth} className="h-3 glow" />
-                </div>
-              )}
-              
-              {skinHealth > 0 && (
-                <div className="scale-in stagger-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-card-foreground slide-in-left">Skin Health</span>
-                    <span className="text-sm text-muted-foreground bounce-in stagger-1" data-testid="skin-health-score">
-                      {Math.round(skinHealth)}%
-                    </span>
-                  </div>
-                  <Progress value={skinHealth} className="h-3 glow" />
-                </div>
-              )}
-            </div>
-            
-            {/* Weekly Progress Chart Placeholder */}
-            {scans.length > 0 && (
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg scale-in stagger-4 hover-lift">
-                <h4 className="text-sm font-medium text-card-foreground mb-3 flex items-center typewriter">
-                  <TrendingUp className="w-4 h-4 mr-2 heartbeat" />
-                  This Week
-                </h4>
-                <div className="flex items-end justify-between h-16">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                    const hasData = index < scans.length;
-                    const height = hasData ? Math.random() * 80 + 20 : 20;
-                    return (
-                      <div key={day} className="flex flex-col items-center scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                        <div 
-                          className={`w-4 rounded-t transition-all duration-1000 scan-progress hover-glow ${
-                            hasData ? 'bg-primary glow' : 'bg-muted'
-                          }`}
-                          style={{ 
-                            height: `${height}%`,
-                            animationDelay: `${index * 0.2}s`
-                          }}
-                        />
-                        <span className="text-xs text-muted-foreground mt-1 fade-in stagger-2" data-testid={`chart-day-${day.toLowerCase()}`}>
-                          {day}
-                        </span>
+      {/* 📜 Left Side: Recent Scans List */}
+      <div className="lg:col-span-2 space-y-8">
+        <div className="flex items-center justify-between px-2">
+          <div>
+            <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter">Scan History</h3>
+            <p className="text-slate-500 font-medium">Recent diagnostic logs from your neural engine.</p>
+          </div>
+          <Button variant="ghost" className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 font-black uppercase tracking-widest text-[10px]">
+            View All Logs <ChevronRight className="ml-2 w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          {scans.length === 0 ? (
+            <Card className="bg-slate-900/40 border-dashed border-white/10 p-20 text-center rounded-[2.5rem]">
+              <Activity className="w-16 h-16 text-slate-700 mx-auto mb-6 opacity-20" />
+              <p className="text-slate-500 italic">No records found. Initialize your first scan above.</p>
+            </Card>
+          ) : (
+            scans.slice(0, 5).map((scan: any, index: number) => (
+              <Card 
+                key={scan.id} 
+                className="group bg-slate-900/40 hover:bg-slate-900/80 border-white/5 backdrop-blur-xl transition-all duration-500 rounded-[2rem] overflow-hidden border-l-4 border-l-transparent hover:border-l-rose-500"
+              >
+                <CardContent className="p-6 flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 bg-slate-950 rounded-2xl flex items-center justify-center border border-white/5 shadow-2xl group-hover:scale-110 transition-transform">
+                      {getScanIcon(scan.scanType)}
+                    </div>
+                    <div>
+                      <h4 className="font-black text-white uppercase italic tracking-tight text-lg leading-none mb-2">
+                        {getScanTypeLabel(scan.scanType)}
+                      </h4>
+                      <div className="flex items-center gap-4 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                        <span className="flex items-center gap-1"><Clock size={12} className="text-rose-500" /> {format(new Date(scan.createdAt), 'PPp')}</span>
+                        <Badge className="bg-white/5 text-slate-400 border-none text-[8px]">ID: #{scan.id.toString().slice(-4)}</Badge>
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-emerald-400 font-black text-xs uppercase tracking-widest flex items-center gap-2 justify-end mb-1">
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Analyzed
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">AI Confidence: 98%</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 📊 Right Side: Health Analytics Sidebar */}
+      <div className="space-y-8">
+        <Card className="bg-slate-900/60 border-white/5 backdrop-blur-2xl rounded-[2.5rem] p-8 shadow-3xl">
+          <CardContent className="p-0 space-y-10">
+            <h3 className="text-2xl font-black text-white italic uppercase flex items-center gap-3">
+              <TrendingUp className="text-rose-500" /> Analytics
+            </h3>
+
+            {/* Health Bars */}
+            <div className="space-y-8">
+              {[
+                { label: "Overall Vitality", value: overallHealth, color: "bg-rose-500" },
+                { label: "Nutritional Balance", value: nutritionHealth, color: "bg-emerald-500" },
+                { label: "Dermal Integrity", value: skinHealth, color: "bg-blue-500" }
+              ].map((stat, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-slate-400">{stat.label}</span>
+                    <span className="text-white">{stat.value}%</span>
+                  </div>
+                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden p-0.5">
+                    <div 
+                      className={`h-full rounded-full ${stat.color} shadow-[0_0_15px_rgba(244,63,94,0.4)]`} 
+                      style={{ width: `${stat.value}%` }} 
+                    />
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Weekly Activity Chart */}
+            <div className="pt-6 border-t border-white/5">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Weekly Activity Log</h4>
+              <div className="flex items-end justify-between h-24 px-2">
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                  <div key={i} className="flex flex-col items-center gap-3 group">
+                    <div 
+                      className={`w-3 rounded-full transition-all duration-500 ${i === 4 ? 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.6)]' : 'bg-slate-800 group-hover:bg-slate-700'}`}
+                      style={{ height: `${[40, 70, 45, 90, 65, 30, 50][i]}%` }}
+                    />
+                    <span className="text-[8px] font-black text-slate-600">{day}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>

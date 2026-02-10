@@ -1,0 +1,126 @@
+const medicalDatabase = {
+  // --- SKIN CONDITIONS ---
+  acne_vulgaris: { 
+    name: "Acne (Pimples)", 
+    type: "Skin",
+    medicine: "Benzoyl Peroxide (2.5%) ya Salicylic Acid Face Wash.", 
+    food: "Green leafy vegetables, berries aur turmeric khayein. Oily food band karein.", 
+    precautions: "Face ko din mein do baar dhoye aur pimples ko touch na karein.", 
+    markers: ["redness", "bumps", "clogged pores"],
+    riskFactor: 82,
+    questions: ["Kya pimples mein dard ho raha hai?", "Kya skin bahut oily rahti hai?"],
+    message: "High bacterial activity detected. Skin inflammation badh sakti hai."
+  },
+  eczema: { 
+    name: "Eczema", 
+    type: "Skin",
+    medicine: "Corticosteroids ya heavy-duty Moisturizer.", 
+    food: "Omega-3 rich foods jaise Walnuts aur Flaxseeds khayein.", 
+    precautions: "Harsh soaps se bachein aur garam paani ka use na karein.", 
+    markers: ["dry patches", "itching", "scaling"],
+    riskFactor: 55,
+    questions: ["Kya skin par bahut itching hoti hai?", "Kya patches dry aur red hain?"],
+    message: "Skin barrier compromised detected. Intense hydration zaroori hai."
+  },
+  fungal_infection: { 
+    name: "Fungal Infection", 
+    type: "Skin",
+    medicine: "Clotrimazole ya Itraconazole cream.", 
+    food: "Sugar aur yeast-based food kam karein. Probiotics lein.", 
+    precautions: "Kapde hamesha dhoop mein sukhayein aur skin dry rakhein.", 
+    markers: ["ring patches", "itching", "red circles"],
+    riskFactor: 75,
+    questions: ["Kya red circles dikh rahe hain?", "Kya itching raat mein badh jati hai?"],
+    message: "Fungal spores detected. Hygiene maintain rakhein."
+  },
+  psoriasis: { 
+    name: "Psoriasis", 
+    type: "Skin",
+    medicine: "Coal Tar ya Salicylic Acid ointment.", 
+    food: "Anti-inflammatory foods jaise Berries aur Spinach lein.", 
+    precautions: "Skin ko moisturized rakhein aur stress manage karein.", 
+    markers: ["silver scales", "red patches", "thick skin"],
+    riskFactor: 60,
+    questions: ["Kya scales silver rang ke hain?", "Kya joints mein dard hai?"],
+    message: "Rapid skin cell turnover detected."
+  },
+  rosacea: { 
+    name: "Rosacea", 
+    type: "Skin",
+    medicine: "Brimonidine Gel ya doctor ki salah se cream.", 
+    food: "Cooling foods jaise Cucumber aur Celery lein.", 
+    precautions: "Spicy food aur seedhi dhoop se bachein.", 
+    markers: ["facial redness", "visible blood vessels", "swelling"],
+    riskFactor: 45,
+    questions: ["Kya spicy khane se redness badhti hai?", "Kya face par jalan hoti hai?"],
+    message: "Vascular sensitivity detected on facial skin."
+  },
+  vitiligo: { 
+    name: "Vitiligo", 
+    type: "Skin",
+    medicine: "Tacrolimus Ointment ya Psoralen.", 
+    food: "Vitamin B12 aur Folic Acid rich food lein.", 
+    precautions: "High-SPF sunscreen ka hamesha use karein.", 
+    markers: ["white patches", "loss of skin color"],
+    riskFactor: 30,
+    questions: ["Kya patches pure safed hain?", "Kya ye dhoop mein jalte hain?"],
+    message: "Melanin deficiency detected in localized areas."
+  },
+
+  // --- NUTRITIONAL DEFICIENCIES ---
+  iron_deficiency: { 
+    name: "Iron Deficiency (Anemia)", 
+    type: "Nutrition",
+    medicine: "Ferrous Sulfate (Iron supplements) doctor ki salah par.", 
+    food: "Palak, Beetroot, Anar aur Gud (Jaggery) ka juice piyein.", 
+    precautions: "Daily exercise karein aur junk food se bachein.", 
+    markers: ["pale skin", "brittle nails", "dark circles"],
+    riskFactor: 68,
+    questions: ["Kya aapko aksar thakan hoti hai?", "Kya nakhun kamzor ho rahe hain?"],
+    message: "Hemoglobin markers low dikh rahe hain."
+  },
+  vitamin_b12: { 
+    name: "Vitamin B12 Deficiency", 
+    type: "Nutrition",
+    medicine: "Methylcobalamin (B12) tablets.", 
+    food: "Milk, Eggs aur Fortified Cereals ka sevan karein.", 
+    precautions: "Nerve weakness ke liye regular checkup karwayein.", 
+    markers: ["pale skin", "smooth tongue", "mouth ulcers"],
+    riskFactor: 52,
+    questions: ["Kya hath-pairo mein jhanjhanahat hoti hai?", "Kya memory kamzor lag rahi hai?"],
+    message: "Neural markers Vitamin B12 deficiency suggest kar rahe hain."
+  },
+  vitamin_d: { 
+    name: "Vitamin D Deficiency", 
+    type: "Nutrition",
+    medicine: "Cholecalciferol Sachet ya Vitamin D3 capsules.", 
+    food: "Mushrooms, Fatty fish aur Egg yolks lein.", 
+    precautions: "Subah ki 15-20 minute ki dhoop zaroori hai.", 
+    markers: ["bone pain", "muscle weakness", "sweaty head"],
+    riskFactor: 70,
+    questions: ["Kya haddiyo mein dard rehta hai?", "Kya mood aksar low rehta hai?"],
+    message: "Bone density risk due to low Vitamin D markers."
+  },
+  vitamin_c_scurvy: { 
+    name: "Vitamin C Deficiency", 
+    type: "Nutrition",
+    medicine: "Limcee ya Vitamin C Chewable tablets.", 
+    food: "Amla, Nimbu, Santra aur Tamatar khayein.", 
+    precautions: "Protect from heat (zyada pakane se Vit C khatam hota hai).", 
+    markers: ["bleeding gums", "rough skin", "slow wound healing"],
+    riskFactor: 40,
+    questions: ["Kya masudo se khoon aata hai?", "Kya chot jaldi nahi bharti?"],
+    message: "Connective tissue markers weak detected."
+  },
+  zinc_deficiency: { 
+    name: "Zinc Deficiency", 
+    type: "Nutrition",
+    medicine: "Zincovit ya Zinc supplements.", 
+    food: "Pumpkin seeds, Cashews aur Beans khayein.", 
+    precautions: "Wound healing aur immunity ke liye Zinc zaroori hai.", 
+    markers: ["hair loss", "diarrhea", "eye/skin sores"],
+    riskFactor: 38,
+    questions: ["Kya baal zyada jhad rahe hain?", "Kya taste ya smell kam ho gayi hai?"],
+    message: "Immune response markers low detected."
+  }
+};

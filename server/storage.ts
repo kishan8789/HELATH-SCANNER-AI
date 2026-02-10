@@ -1,4 +1,8 @@
-import { type User, type InsertUser, type Scan, type InsertScan, type Recommendation, type InsertRecommendation } from "@shared/schema";
+import {
+  type User, type InsertUser,
+  type Scan, type InsertScan,
+  type Recommendation, type InsertRecommendation
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -6,12 +10,9 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   createScan(scan: InsertScan): Promise<Scan>;
-  getScansByUserId(userId: string): Promise<Scan[]>;
+  getScansByUserId(userId: string): Promise<Scan[]>; // Is naam ko routes.ts use kar raha hai
   getScan(id: string): Promise<Scan | undefined>;
   updateScan(id: string, updates: Partial<Scan>): Promise<Scan | undefined>;
-  createRecommendation(recommendation: InsertRecommendation): Promise<Recommendation>;
-  getRecommendationsByScanId(scanId: string): Promise<Recommendation[]>;
-  getRecentRecommendations(limit?: number): Promise<Recommendation[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -44,19 +45,20 @@ export class MemStorage implements IStorage {
 
   async createScan(insertScan: InsertScan): Promise<Scan> {
     const id = randomUUID();
-    const scan: Scan = { 
-      ...insertScan, 
-      id, 
-      createdAt: new Date() 
+    const scan: Scan = {
+      ...insertScan,
+      id,
+      createdAt: new Date()
     };
     this.scans.set(id, scan);
     return scan;
   }
 
+  // ✅ Routes is function ko call karega
   async getScansByUserId(userId: string): Promise<Scan[]> {
     return Array.from(this.scans.values())
       .filter(scan => scan.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
   }
 
   async getScan(id: string): Promise<Scan | undefined> {
@@ -66,34 +68,12 @@ export class MemStorage implements IStorage {
   async updateScan(id: string, updates: Partial<Scan>): Promise<Scan | undefined> {
     const scan = this.scans.get(id);
     if (!scan) return undefined;
-    
+
     const updatedScan = { ...scan, ...updates };
     this.scans.set(id, updatedScan);
     return updatedScan;
   }
-
-  async createRecommendation(insertRecommendation: InsertRecommendation): Promise<Recommendation> {
-    const id = randomUUID();
-    const recommendation: Recommendation = {
-      ...insertRecommendation,
-      id,
-      createdAt: new Date()
-    };
-    this.recommendations.set(id, recommendation);
-    return recommendation;
-  }
-
-  async getRecommendationsByScanId(scanId: string): Promise<Recommendation[]> {
-    return Array.from(this.recommendations.values())
-      .filter(rec => rec.scanId === scanId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async getRecentRecommendations(limit: number = 10): Promise<Recommendation[]> {
-    return Array.from(this.recommendations.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, limit);
-  }
 }
 
+// ✅ Is line ka export hona zaroori hai routes.ts ke liye
 export const storage = new MemStorage();

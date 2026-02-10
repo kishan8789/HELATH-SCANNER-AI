@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, X, Square } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import Webcam from "react-webcam";
 
 interface CameraInterfaceProps {
@@ -14,7 +13,11 @@ interface CameraInterfaceProps {
   onClose: () => void;
 }
 
-export default function CameraInterface({ scanType, onScanComplete, onClose }: CameraInterfaceProps) {
+export default function CameraInterface({
+  scanType,
+  onScanComplete,
+  onClose,
+}: CameraInterfaceProps) {
   const [isRecording, setIsRecording] = useState(true);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const webcamRef = useRef<Webcam>(null);
@@ -22,28 +25,39 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
 
   const analyzeMutation = useMutation({
     mutationFn: async (imageData: string) => {
-      // Convert base64 to blob
-      const response = await fetch(imageData);
-      const blob = await response.blob();
-      
+      // base64 → blob
+      const res = await fetch(imageData);
+      const blob = await res.blob();
+
       const formData = new FormData();
-      formData.append('image', blob, 'scan.jpg');
-      formData.append('scanType', scanType);
-      
-      const result = await apiRequest('POST', '/api/analyze-image', formData);
-      return result.json();
+      formData.append("image", blob, "scan.jpg"); // ✅ exact name
+      formData.append("scanType", scanType);      // ✅ required
+
+      const response = await fetch("/api/analyze-image", {
+        method: "POST",
+        body: formData, // ❗ DO NOT set headers
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Analysis failed");
+      }
+
+      return response.json();
     },
+
     onSuccess: (data) => {
       toast({
         title: "Scan Complete",
-        description: "Your image has been analyzed successfully.",
+        description: "Image analyzed successfully.",
       });
       onScanComplete(data.scanId);
     },
-    onError: (error) => {
+
+    onError: (error: any) => {
       toast({
-        title: "Analysis Failed", 
-        description: error.message || "Failed to analyze image. Please try again.",
+        title: "Analysis Failed",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -51,12 +65,11 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
 
   const captureImage = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setCapturedImage(imageSrc);
-      setIsRecording(false);
-      // Start analysis immediately
-      analyzeMutation.mutate(imageSrc);
-    }
+    if (!imageSrc) return;
+
+    setCapturedImage(imageSrc);
+    setIsRecording(false);
+    analyzeMutation.mutate(imageSrc);
   }, [analyzeMutation]);
 
   const retakeImage = () => {
@@ -64,50 +77,25 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
     setIsRecording(true);
   };
 
-  const getScanTypeLabel = (type: string) => {
-    switch (type) {
-      case 'nutrition': return 'Nutrition Analysis';
-      case 'acne': return 'Acne Analysis';
-      case 'general': return 'General Health';
-      default: return 'Health Scan';
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in" data-testid="camera-interface-modal">
-      <Card className="w-full max-w-4xl mx-4 scale-in bounce-in">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <Card className="w-full max-w-4xl mx-4">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4 slide-in-left">
-            <div className="flex items-center space-x-3">
-              <h3 className="text-lg font-semibold text-card-foreground typewriter" data-testid="scan-title">
-                {getScanTypeLabel(scanType)}
-              </h3>
-              <Badge variant="secondary bounce-in stagger-1" data-testid="scan-type-badge">{scanType}</Badge>
-            </div>
-            <div className="flex items-center space-x-2 slide-in-right">
-              {isRecording && (
-                <>
-                  <div className="w-2 h-2 bg-red-500 rounded-full pulse-animation glow"></div>
-                  <span className="text-sm text-muted-foreground fade-in" data-testid="status-recording">Recording</span>
-                </>
-              )}
-              {analyzeMutation.isPending && (
-                <Badge variant="secondary shimmer" data-testid="status-analyzing">Analyzing...</Badge>
-              )}
-              <Button variant="ghost" size="icon" onClick={onClose} className="hover-scale" data-testid="button-close-camera">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="flex justify-between mb-4">
+            <h3 className="text-lg font-semibold capitalize">
+              {scanType} Scan
+            </h3>
+
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X />
+            </Button>
           </div>
-          
-          {/* Camera Feed */}
-          <div className="relative bg-muted rounded-lg aspect-video flex items-center justify-center mb-4 overflow-hidden scale-in hover-glow">
+
+          <div className="relative bg-muted rounded-lg aspect-video mb-4 overflow-hidden">
             {capturedImage ? (
-              <img 
-                src={capturedImage} 
-                alt="Captured scan" 
+              <img
+                src={capturedImage}
                 className="w-full h-full object-cover"
-                data-testid="captured-image"
               />
             ) : (
               <Webcam
@@ -115,95 +103,34 @@ export default function CameraInterface({ scanType, onScanComplete, onClose }: C
                 audio={false}
                 screenshotFormat="image/jpeg"
                 className="w-full h-full object-cover"
-                data-testid="webcam-feed"
-                onUserMediaError={(error) => {
-                  console.error("Camera access error:", error);
-                  toast({
-                    title: "Camera Access Failed",
-                    description: "Please allow camera access to use this feature.",
-                    variant: "destructive",
-                  });
-                }}
               />
             )}
-            
-            {!capturedImage && !isRecording && (
-              <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                <div className="text-center">
-                  <Camera className="w-16 h-16 text-primary mb-2 mx-auto" />
-                  <p className="text-primary font-medium" data-testid="text-camera-inactive">Camera Inactive</p>
-                </div>
-              </div>
-            )}
-            
+
             {analyzeMutation.isPending && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center fade-in">
-                <div className="text-center text-white">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4 glow"></div>
-                  <p className="font-medium typewriter" data-testid="text-analyzing">Analyzing with AI Vision...</p>
-                  <div className="mt-4 flex justify-center space-x-1">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="w-2 h-2 bg-white rounded-full voice-wave"
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
+                Analyzing with AI…
               </div>
             )}
           </div>
-          
-          {/* Controls */}
-          <div className="flex justify-center space-x-3 slide-in-left stagger-3">
+
+          <div className="flex justify-center gap-3">
             {!capturedImage ? (
               <>
-                <Button 
-                  onClick={captureImage}
-                  disabled={!isRecording || analyzeMutation.isPending}
-                  className="hover-scale glow"
-                  data-testid="button-capture"
-                >
+                <Button onClick={captureImage}>
                   <Camera className="mr-2 h-4 w-4" />
                   Capture
                 </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={onClose}
-                  className="hover-scale"
-                  data-testid="button-cancel"
-                >
+                <Button variant="destructive" onClick={onClose}>
                   <Square className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
               </>
             ) : (
-              <Button 
-                variant="outline" 
-                onClick={retakeImage}
-                disabled={analyzeMutation.isPending}
-                className="hover-scale breathe"
-                data-testid="button-retake"
-              >
-                <Camera className="mr-2 h-4 w-4" />
+              <Button variant="outline" onClick={retakeImage}>
                 Retake
               </Button>
             )}
           </div>
-          
-          {/* Analysis Progress */}
-          {analyzeMutation.isPending && (
-            <div className="mt-4 space-y-2 fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground typewriter" data-testid="progress-label">Processing Image...</span>
-                <span className="text-sm font-medium text-primary pulse-animation" data-testid="progress-percentage">Processing</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2 hover-glow">
-                <div className="bg-primary h-2 rounded-full shimmer scan-progress" style={{ width: "60%" }}></div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

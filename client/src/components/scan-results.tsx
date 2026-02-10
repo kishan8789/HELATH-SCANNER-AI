@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertTriangle, Info, X } from "lucide-react";
+import { CheckCircle, AlertTriangle, Info, X, Zap } from "lucide-react"; // Zap icon for AI power
 import { useQuery } from "@tanstack/react-query";
 
 interface ScanResultsProps {
@@ -10,19 +10,27 @@ interface ScanResultsProps {
 }
 
 export default function ScanResults({ scanId, onClose }: ScanResultsProps) {
+  // 1. Data fetching matching your backend route
   const { data: scan, isLoading } = useQuery({
     queryKey: ["/api/scans", scanId],
+    queryFn: async () => {
+      const res = await fetch(`/api/scans/${scanId}`);
+      if (!res.ok) throw new Error("Scan not found");
+      return res.json();
+    },
   });
 
   if (isLoading) {
     return (
       <div className="mb-8 fade-in">
-        <Card className="hover-lift">
+        <Card className="hover-lift border-primary/20">
           <CardContent className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-6 bg-muted rounded w-1/3 shimmer"></div>
-              <div className="h-4 bg-muted rounded w-1/2 shimmer" style={{ animationDelay: '0.2s' }}></div>
-              <div className="h-32 bg-muted rounded shimmer" style={{ animationDelay: '0.4s' }}></div>
+            <div className="flex flex-col items-center justify-center space-y-4 py-10">
+              <Zap className="h-8 w-8 text-primary animate-pulse" />
+              <p className="text-sm font-medium animate-bounce">Generating AI Insights...</p>
+              <div className="w-full max-w-xs h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary animate-shimmer" style={{ width: '60%' }}></div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -30,193 +38,108 @@ export default function ScanResults({ scanId, onClose }: ScanResultsProps) {
     );
   }
 
-  if (!scan) {
-    return (
-      <div className="mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground" data-testid="error-scan-not-found">
-              Scan not found or failed to load.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!scan) return null; // Error handling handled by your parent or toast
 
   const analysis = scan.analysis || {};
-  const getResultIcon = (severity: string) => {
-    switch (severity?.toLowerCase()) {
-      case 'normal':
-      case 'good':
-      case 'excellent':
-        return <CheckCircle className="text-green-600 w-5 h-5" />;
-      case 'attention':
-      case 'medium':
-      case 'moderate':
-        return <AlertTriangle className="text-yellow-600 w-5 h-5" />;
-      default:
-        return <Info className="text-blue-600 w-5 h-5" />;
-    }
-  };
-
-  const getResultColor = (severity: string) => {
-    switch (severity?.toLowerCase()) {
-      case 'normal':
-      case 'good':
-      case 'excellent':
-        return 'bg-green-50 border-green-200 text-green-800';
-      case 'attention':
-      case 'medium':
-      case 'moderate':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      default:
-        return 'bg-blue-50 border-blue-200 text-blue-800';
-    }
-  };
-
+  
   return (
-    <div className="mb-8 scale-in bounce-in">
-      <Card className="hover-lift">
+    <div className="mb-8 scale-in">
+      <Card className="hover-lift border-t-4 border-t-primary shadow-xl">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6 slide-in-left">
+          
+          {/* Header Section */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <h3 className="text-xl font-semibold text-card-foreground typewriter" data-testid="results-title">
-                AI Analysis Results
+              <h3 className="text-xl font-bold text-card-foreground">
+                AI Health Report
               </h3>
-              <Badge variant="secondary bounce-in stagger-1" data-testid="scan-type">{scan.type}</Badge>
-            </div>
-            <div className="flex items-center space-x-2 slide-in-right">
-              <Badge className="bg-green-100 text-green-700 heartbeat" data-testid="scan-status">
-                {scan.status === 'completed' ? 'Complete' : scan.status}
+              <Badge variant="outline" className="bg-primary/5 capitalize text-primary border-primary/20">
+                {scan.type} Analysis
               </Badge>
-              <Button variant="ghost" size="icon" onClick={onClose} className="hover-scale" data-testid="button-close-results">
-                <X className="h-4 w-4" />
-              </Button>
             </div>
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* AI Pipeline Info (New Section for Recruiter) */}
+          <div className="mb-6 p-3 bg-blue-50/50 rounded-lg border border-blue-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-800">Hybrid AI Pipeline Active</span>
+            </div>
+            <span className="text-[10px] text-blue-600 font-mono">HF-Vision + GPT-4o</span>
           </div>
           
-          {/* Confidence Score */}
-          <div className="mb-6 fade-in stagger-2">
+          {/* Confidence Score (Hugging Face Data) */}
+          <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground slide-in-left">Analysis Confidence</span>
-              <span className="text-sm font-medium text-foreground bounce-in stagger-1" data-testid="confidence-score">
+              <span className="text-sm font-medium text-muted-foreground">Detection Accuracy (HF)</span>
+              <span className="text-lg font-bold text-primary">
                 {scan.confidence}%
               </span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2 hover-glow">
+            <div className="w-full bg-muted rounded-full h-3">
               <div 
-                className="bg-green-500 h-2 rounded-full transition-all duration-1000 shimmer glow" 
+                className="bg-primary h-3 rounded-full transition-all duration-1000 relative overflow-hidden" 
                 style={{ width: `${scan.confidence}%` }}
-              ></div>
+              >
+                <div className="absolute inset-0 bg-white/20 animate-shimmer"></div>
+              </div>
             </div>
           </div>
           
-          {/* Analysis Summary */}
+          {/* Analysis Summary (OpenAI Hinglish Data) */}
           {analysis.summary && (
-            <div className="mb-6 p-4 bg-muted/50 rounded-lg scale-in stagger-3 hover-lift">
-              <h4 className="font-medium text-card-foreground mb-2 typewriter">Summary</h4>
-              <p className="text-sm text-muted-foreground fade-in stagger-1" data-testid="analysis-summary">
-                {analysis.summary}
+            <div className="mb-8 p-5 bg-muted/30 rounded-xl border-l-4 border-primary italic shadow-inner">
+              <h4 className="font-bold text-sm text-primary mb-2 uppercase tracking-tight">AI Summary</h4>
+              <p className="text-md text-foreground/90 leading-relaxed">
+                "{analysis.summary}"
               </p>
             </div>
           )}
           
-          {/* Detailed Results */}
-          <div className="space-y-3">
-            {/* Nutrition-specific results */}
-            {scan.type === 'nutrition' && analysis.deficiencies && (
-              <>
-                <h4 className="font-medium text-card-foreground mb-3">Nutrient Assessment</h4>
-                {analysis.deficiencies.map((deficiency: any, index: number) => (
-                  <div key={index} className={`flex items-start p-3 rounded-lg border slide-in-left hover-lift ${getResultColor('attention')}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                    <AlertTriangle className="text-yellow-600 w-5 h-5 mr-3 mt-0.5 flex-shrink-0 pulse-animation" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium fade-in" data-testid={`deficiency-${index}`}>
-                        {typeof deficiency === 'string' ? deficiency : deficiency.name || 'Nutrient concern detected'}
-                      </p>
-                      {typeof deficiency === 'object' && deficiency.description && (
-                        <p className="text-xs mt-1 opacity-80 slide-in-right stagger-1" data-testid={`deficiency-description-${index}`}>
-                          {deficiency.description}
-                        </p>
-                      )}
-                    </div>
+          {/* Recommendations (Dynamic Cards) */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-muted-foreground uppercase tracking-widest">Recommended Actions</h4>
+            <div className="grid grid-cols-1 gap-3">
+              {analysis.recommendations?.map((rec: any, index: number) => (
+                <div 
+                  key={index} 
+                  className="flex items-start p-4 bg-card rounded-lg border border-border hover:border-primary/40 transition-all hover:shadow-md group"
+                >
+                  <div className={`p-2 rounded-full mr-4 ${rec.priority === 'high' ? 'bg-red-50' : 'bg-green-50'}`}>
+                    {rec.priority === 'high' ? 
+                      <AlertTriangle className="h-4 w-4 text-red-500" /> : 
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    }
                   </div>
-                ))}
-              </>
-            )}
-            
-            {/* Acne-specific results */}
-            {scan.type === 'acne' && (
-              <>
-                {analysis.acneType && (
-                  <div className={`flex items-start p-3 rounded-lg border ${getResultColor(analysis.severity || 'medium')}`}>
-                    {getResultIcon(analysis.severity)}
-                    <div className="ml-3">
-                      <p className="text-sm font-medium" data-testid="acne-type">
-                        {analysis.acneType} - {analysis.severity || 'Moderate'} severity
+                  <div className="flex-1">
+                    <p className="text-sm font-bold group-hover:text-primary transition-colors">
+                      {rec.title || rec}
+                    </p>
+                    {rec.description && (
+                      <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                        {rec.description}
                       </p>
-                      {analysis.affectedAreas && (
-                        <p className="text-xs mt-1 opacity-80" data-testid="affected-areas">
-                          Affected areas: {Array.isArray(analysis.affectedAreas) ? analysis.affectedAreas.join(', ') : analysis.affectedAreas}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
-                )}
-              </>
-            )}
-            
-            {/* General recommendations */}
-            {analysis.recommendations && analysis.recommendations.length > 0 && (
-              <>
-                <h4 className="font-medium text-card-foreground mb-3 mt-6">Recommendations</h4>
-                {analysis.recommendations.map((rec: any, index: number) => (
-                  <div key={index} className={`flex items-start p-3 rounded-lg border slide-in-right hover-lift ${getResultColor('good')}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                    <CheckCircle className="text-green-600 w-5 h-5 mr-3 mt-0.5 flex-shrink-0 heartbeat" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium bounce-in" data-testid={`recommendation-${index}`}>
-                        {typeof rec === 'string' ? rec : rec.title || rec.description || 'Health recommendation'}
-                      </p>
-                      {typeof rec === 'object' && rec.description && rec.title && (
-                        <p className="text-xs mt-1 opacity-80 fade-in stagger-1" data-testid={`recommendation-description-${index}`}>
-                          {rec.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-            
-            {/* Fallback if no specific results */}
-            {!analysis.deficiencies && !analysis.acneType && !analysis.recommendations && (
-              <div className="flex items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <Info className="text-blue-600 w-5 h-5 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-blue-800" data-testid="general-result">
-                    Analysis completed successfully
-                  </p>
-                  <p className="text-xs text-blue-600">
-                    Confidence: {scan.confidence}%
-                  </p>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex space-x-3 mt-6 pt-4 border-t border-border slide-in-left stagger-5">
-            <Button variant="outline" className="flex-1 hover-scale" data-testid="button-save-results">
-              Save Results
-            </Button>
-            <Button variant="outline" className="flex-1 hover-scale stagger-1" data-testid="button-share-results">
-              Share Report
-            </Button>
-            <Button className="flex-1 hover-scale glow stagger-2" data-testid="button-new-scan">
-              New Scan
-            </Button>
+          {/* Bottom Actions */}
+          <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t">
+            <Button variant="outline" className="text-xs">Save</Button>
+            <Button variant="outline" className="text-xs">Share</Button>
+            <Button onClick={onClose} className="text-xs shadow-glow">Close Report</Button>
           </div>
+
+          <p className="mt-6 text-[10px] text-center text-muted-foreground leading-tight italic">
+            Note: This AI-generated assessment is for educational guidance only. 
+            LPU Placement Project 2026.
+          </p>
         </CardContent>
       </Card>
     </div>
