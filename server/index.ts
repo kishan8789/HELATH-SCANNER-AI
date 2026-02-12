@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config({ path: process.cwd() + "/.env" });
-console.log("API KEY:", process.env.OPENAI_API_KEY);
+// console.log("API KEY:", process.env.OPENAI_API_KEY);
 
 
 import express, { Request, Response, NextFunction } from "express";
